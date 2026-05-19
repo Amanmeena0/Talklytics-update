@@ -1,0 +1,142 @@
+"""
+modules/fusion_model.py
+────────────────────────
+Random-Forest fusion model that combines acoustic + linguistic feature
+vectors into a Convincingness Score (1–5).
+
+Two modes
+─────────
+1. Inference only   – load a pre-trained model from disk.
+2. Training         – call FusionModel.train() with labeled data then save.
+"""
+
+import os
+from pathlib import Path
+
+import numpy as np
+import joblib
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import LabelEncoder
+
+from config import MODEL_PATH, LABEL_ENCODER_PATH, SCORE_LABELS
+from modules.acoustic_extractor import AcousticFeatures
+from modules.linguistic_analyzer import LinguisticFeatures
+
+
+class FusionModel:
+    """Multimodal fusion model wrapping a scikit-learn RandomForest."""
+
+    def __init__(self) -> None:
+        self._clf: RandomForestClassifier | None = None
+        self._le:  LabelEncoder | None = None
+
+    # ------------------------------------------------------------------ #
+    #  Public API                                                          #
+    # ------------------------------------------------------------------ #
+
+    def predict(
+        self,
+        acoustic: AcousticFeatures,
+        linguistic: LinguisticFeatures,
+    ) -> tuple[int, float]:
+        """Return (score 1-5, confidence 0-1) for a single segment.
+
+        Falls back to a heuristic if no trained model is available.
+        """
+        if self._clf is None:
+            return self._heuristic(acoustic, linguistic)
+
+        feature_vec = self._build_vector(acoustic, linguistic).reshape(1, -1)
+        label   = self._clf.predict(feature_vec)[0]
+        proba   = max(self._clf.predict_proba(feature_vec)[0])
+        score   = int(self._le.inverse_transform([label])[0])
+        return score, float(proba)
+
+    def load(
+        self,
+        model_path: str  = MODEL_PATH,
+        encoder_path: str = LABEL_ENCODER_PATH,
+    ) -> None:
+        """Load a previously saved model from disk."""
+        if Path(model_path).exists() and Path(encoder_path).exists():
+            self._clf = joblib.load(model_path)
+            self._le  = joblib.load(encoder_path)
+
+    def train(
+        self,
+        X: np.ndarray,
+        y: np.ndarray,
+        n_estimators: int = 200,
+        random_state: int = 42,
+    ) -> dict:
+        """Train the fusion model.
+
+        Parameters
+        ----------
+        X : shape (n_samples, n_features)  – concatenated feature vectors
+        y : shape (n_samples,)             – integer labels 1–5
+        """
+        self._le  = LabelEncoder().fit(y)
+        y_enc     = self._le.transform(y)
+        self._clf = RandomForestClassifier(
+            n_estimators=n_estimators,
+            random_state=random_state,
+            class_weight="balanced",
+        )
+        self._clf.fit(X, y_enc)
+        return {"trained": True, "classes": list(self._le.classes_)}
+
+    def save(
+        self,
+        model_path: str   = MODEL_PATH,
+        encoder_path: str = LABEL_ENCODER_PATH,
+    ) -> None:
+        """Persist model and label encoder to disk."""
+        os.makedirs(Path(model_path).parent, exist_ok=True)
+        joblib.dump(self._clf, model_path)
+        joblib.dump(self._le,  encoder_path)
+
+    # ------------------------------------------------------------------ #
+    #  Internal helpers                                                    #
+    # ------------------------------------------------------------------ #
+
+    @staticmethod
+    def _build_vector(
+        acoustic: AcousticFeatures,
+        linguistic: LinguisticFeatures,
+    ) -> np.ndarray:
+        return np.concatenate([
+            acoustic.to_vector(),
+            linguistic.to_vector(),
+        ])
+
+    @staticmethod
+    def _heuristic(
+        acoustic: AcousticFeatures,
+        linguistic: LinguisticFeatures,
+    ) -> tuple[int, float]:
+        """Simple rule-based fallback when no trained model is present."""
+        score = 3  # neutral baseline
+
+        if linguistic.sentiment_label == "POSITIVE":
+            score += 1
+        elif linguistic.sentiment_label == "NEGATIVE":
+            score -= 1
+
+        score += min(len(linguistic.buying_signals), 1)
+        score -= min(len(linguistic.hesitations),    1)
+
+        # Intent-aware scoring
+        intents = set(linguistic.detected_intents)
+        if "COMMITMENT" in intents:
+            score += 1          # strong buying signal
+        if "OBJECTION" in intents:
+            score -= 1          # concern raised
+        if len(intents) >= 2:
+            score += 1          # high intent diversity = engaged customer
+
+        if acoustic.energy > 0.05:
+            score += 0  # could add energy-based rules here
+
+        score = max(1, min(5, score))
+        return score, 0.5

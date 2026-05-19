@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+
+# Models (large binaries — commit only intentionally)
+models/*.pkl
+models/*.joblib
+
+# Data
+data/ravdess/
+data/meld/
+data/*.npz
+data/*.csv
+
+# Streamlit
+.streamlit/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# dependencies
+node_modules/
+# env files
+.env
+# logs
+*.log
