@@ -99,10 +99,10 @@ class TestLinguisticAnalyzer:
         feats = self.nlp.analyze("")
         assert isinstance(feats, LinguisticFeatures)
 
-    def test_to_vector_has_4_elements(self):
+    def test_to_vector_has_6_elements(self):
         feats = self.nlp.analyze("Let's discuss next steps.")
         vec = feats.to_vector()
-        assert vec.shape == (4,)
+        assert vec.shape == (6,)
 
 
 # ── FusionModel (heuristic mode) ──────────────────────────────────────── #

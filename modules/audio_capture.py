@@ -77,7 +77,7 @@ class AudioCapture:
         # Block size: 512 samples is a safe, low-latency default on macOS
         self._blocksize = 512
 
-        self._q: queue.Queue[np.ndarray] = queue.Queue()
+        self._q: queue.Queue[np.ndarray] = queue.Queue(maxsize=10)
         self._buffer: list[np.ndarray]   = []
         self._stream: sd.InputStream | None = None
         self._running = False
@@ -165,4 +165,7 @@ class AudioCapture:
                 segment   = combined[: self.segment_samples]
                 remainder = combined[self.segment_samples :]
                 self._buffer = [remainder] if len(remainder) else []
-                self._q.put(segment)
+                try:
+                    self._q.put_nowait(segment)
+                except queue.Full:
+                    pass

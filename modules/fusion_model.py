@@ -47,9 +47,19 @@ class FusionModel:
             return self._heuristic(acoustic, linguistic)
 
         feature_vec = self._build_vector(acoustic, linguistic).reshape(1, -1)
-        label   = self._clf.predict(feature_vec)[0]
-        proba   = max(self._clf.predict_proba(feature_vec)[0])
-        score   = int(self._le.inverse_transform([label])[0])
+        return self.predict_raw(feature_vec)
+
+    def predict_raw(self, feature_vec: np.ndarray) -> tuple[int, float]:
+        """Return (score 1-5, confidence 0-1) from a raw feature vector."""
+        if self._clf is None:
+            return 3, 0.0
+
+        if len(feature_vec.shape) == 1:
+            feature_vec = feature_vec.reshape(1, -1)
+
+        label = self._clf.predict(feature_vec)[0]
+        proba = max(self._clf.predict_proba(feature_vec)[0])
+        score = int(self._le.inverse_transform([label])[0])
         return score, float(proba)
 
     def load(

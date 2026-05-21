@@ -70,9 +70,7 @@ def main() -> None:
     model.train(X_train, y_train)
 
     # Evaluate
-    from sklearn.preprocessing import LabelEncoder
-    le = LabelEncoder().fit(y)
-    y_pred = np.array([model.predict_raw(x) for x in X_test])
+    y_pred = np.array([model.predict_raw(x)[0] for x in X_test])
 
     print("\n── Evaluation Results ──────────────────────────────────────")
     print(f"Accuracy : {accuracy_score(y_test, y_pred):.4f}")

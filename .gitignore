@@ -8,13 +8,13 @@ env/
 *.egg-info/
 dist/
 build/
-
+archive
 # Models (large binaries — commit only intentionally)
 models/*.pkl
 !models/fusion_model.pkl
 !models/label_encoder.pkl
 models/*.joblib
-
+archive/
 # Data
 data/ravdess/
 data/meld/
