@@ -72,39 +72,7 @@ class FusionModel:
             self._clf = joblib.load(model_path)
             self._le  = joblib.load(encoder_path)
 
-    def train(
-        self,
-        X: np.ndarray,
-        y: np.ndarray,
-        n_estimators: int = 200,
-        random_state: int = 42,
-    ) -> dict:
-        """Train the fusion model.
 
-        Parameters
-        ----------
-        X : shape (n_samples, n_features)  – concatenated feature vectors
-        y : shape (n_samples,)             – integer labels 1–5
-        """
-        self._le  = LabelEncoder().fit(y)
-        y_enc     = self._le.transform(y)
-        self._clf = RandomForestClassifier(
-            n_estimators=n_estimators,
-            random_state=random_state,
-            class_weight="balanced",
-        )
-        self._clf.fit(X, y_enc)
-        return {"trained": True, "classes": list(self._le.classes_)}
-
-    def save(
-        self,
-        model_path: str   = MODEL_PATH,
-        encoder_path: str = LABEL_ENCODER_PATH,
-    ) -> None:
-        """Persist model and label encoder to disk."""
-        os.makedirs(Path(model_path).parent, exist_ok=True)
-        joblib.dump(self._clf, model_path)
-        joblib.dump(self._le,  encoder_path)
 
     # ------------------------------------------------------------------ #
     #  Internal helpers                                                    #

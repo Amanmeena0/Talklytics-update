@@ -25,6 +25,7 @@ from sklearn.model_selection import train_test_split
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from src.ml.training.trainer import FusionTrainer
 from src.ml.inference.fusion_inference  import FusionModel
 from src.ml.training.data_loader  import DataLoader
 
@@ -65,11 +66,17 @@ def main() -> None:
     )
 
     # Train
-    model = FusionModel()
+    trainer = FusionTrainer()
     print("\nTraining Random Forest …")
-    model.train(X_train, y_train)
+    trainer.train(X_train, y_train)
+
+    # Save
+    trainer.save()
+    print("\nModel saved to models/")
 
     # Evaluate
+    model = FusionModel()
+    model.load()
     y_pred = np.array([model.predict_raw(x)[0] for x in X_test])
 
     print("\n── Evaluation Results ──────────────────────────────────────")
@@ -78,10 +85,6 @@ def main() -> None:
     print(classification_report(y_test, y_pred, zero_division=0))
     print("Confusion Matrix:")
     print(confusion_matrix(y_test, y_pred))
-
-    # Save
-    model.save()
-    print("\nModel saved to models/")
 
 
 if __name__ == "__main__":

@@ -19,6 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from src.ml.training.generate_synthetic_data import generate
 from src.ml.inference.fusion_inference import FusionModel
+from src.ml.training.trainer import FusionTrainer
 
 
 def main() -> None:
@@ -39,15 +40,19 @@ def main() -> None:
 
     # 3. Train
     print("\n[3/4] Training Random Forest …")
-    model = FusionModel()
-    model.train(X_train, y_train)
+    trainer = FusionTrainer()
+    trainer.train(X_train, y_train)
+
+    # Save
+    trainer.save()
+    print("\n✅ Model saved to models/fusion_model.pkl")
 
     # 4. Evaluate
     print("\n[4/4] Evaluating …")
 
     # Use the internal RF directly for batch eval
-    clf = model._clf
-    le  = model._le
+    clf = trainer.clf
+    le  = trainer.le
     y_enc_test = le.transform(y_test)
     y_enc_pred = clf.predict(X_test)
     y_pred = le.inverse_transform(y_enc_pred)
@@ -59,9 +64,6 @@ def main() -> None:
     print("  Confusion Matrix:")
     print(confusion_matrix(y_test, y_pred))
 
-    # Save
-    model.save()
-    print("\n✅ Model saved to models/fusion_model.pkl")
     print("   Launch the dashboard: streamlit run src/dashboard/app.py")
 
 
