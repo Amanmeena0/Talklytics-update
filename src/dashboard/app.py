@@ -116,11 +116,16 @@ if st.session_state.running:
     records = st.session_state.records
 
 # ── Layout: metrics + latest segment ──────────────────────────────────── #
-col_score, col_avg, col_sentiment, col_keywords = st.columns(4)
+col_score, col_avg, col_sentiment, col_keywords, col_speaker = st.columns(5)
 
 if records:
     latest = records[-1]
     avg    = pipeline.tracker.average_score
+    
+    # Calculate Talk/Listen ratio
+    speaker_1_count = sum(1 for r in records if r.speaker == "Speaker 1")
+    total_count = len(records)
+    talk_ratio = int((speaker_1_count / total_count) * 100) if total_count > 0 else 0
 
     col_score.metric(
         "Current Score",
@@ -133,6 +138,11 @@ if records:
         "Buying Signals",
         len(latest.buying_signals),
         delta=f"+{len(latest.buying_signals)}" if latest.buying_signals else None,
+    )
+    col_speaker.metric(
+        "Speaker 1 Talk Time",
+        f"{talk_ratio}%",
+        delta=f"{100-talk_ratio}% Spk 2"
     )
 
     # Latest transcript
@@ -173,6 +183,7 @@ else:
     col_avg.metric("Session Average", "—")
     col_sentiment.metric("Sentiment", "—")
     col_keywords.metric("Buying Signals", "—")
+    col_speaker.metric("Speaker 1 Talk Time", "—")
     st.info("Press **▶ Start** and speak into your microphone.")
 
 st.divider()
@@ -213,8 +224,10 @@ if records:
             intent_str = ""
             if rec.detected_intents:
                 intent_str = " | 🎯 " + ", ".join(rec.detected_intents)
+            # Color code speakers
+            speaker_color = "blue" if rec.speaker == "Speaker 1" else "green"
             st.markdown(
-                f"**{mins:02d}:{secs:02d}** | Score `{rec.score}` | "
+                f"**{mins:02d}:{secs:02d}** | :{speaker_color}[**{rec.speaker}**] | Score `{rec.score}` | "
                 f"{rec.sentiment}{intent_str} | _{rec.transcript}_"
             )
 

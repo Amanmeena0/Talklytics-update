@@ -24,6 +24,7 @@ class EngagementRecord:
     recommendation:   str
     energy:           float
     confidence:       float
+    speaker:          str
 
 
 class EngagementTracker:
@@ -49,6 +50,7 @@ class EngagementTracker:
         recommendation: str = "",
         energy: float = 0.0,
         confidence: float = 0.0,
+        speaker: str = "Unknown",
     ) -> EngagementRecord:
         # ── Temporal smoothing (EMA) for intent confidence ─────────── #
         if self._records:
@@ -68,6 +70,7 @@ class EngagementTracker:
             recommendation=recommendation,
             energy=energy,
             confidence=confidence,
+            speaker=speaker,
         )
         self._records.append(rec)
         return rec

@@ -17,8 +17,8 @@ class LLMSummarizer:
         transcript_lines = []
         for r in records:
             if r.transcript.strip():
-                time_str = r.timestamp.strftime("%H:%M:%S")
-                transcript_lines.append(f"[{time_str}] Score: {r.score}/5 - {r.transcript}")
+                time_str = r.timestamp.strftime("%H:%M:%S") if hasattr(r.timestamp, "strftime") else f"{int(r.timestamp//60):02d}:{int(r.timestamp%60):02d}"
+                transcript_lines.append(f"[{time_str}] {r.speaker} (Score: {r.score}/5): {r.transcript}")
         
         full_transcript = "\n".join(transcript_lines)
 

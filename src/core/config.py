@@ -4,7 +4,7 @@
 
 from pathlib import Path
 
-_PROJECT_ROOT = Path(__file__).resolve().parent
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 
 # Audio
 SAMPLE_RATE        = 16_000        # Hz
@@ -23,8 +23,8 @@ WHISPER_LANGUAGE   = "en"
 SENTIMENT_MODEL    = "distilbert-base-uncased-finetuned-sst-2-english"
 
 # Fusion model (platform-independent paths)
-MODEL_PATH         = str(_PROJECT_ROOT / "models" / "fusion_model.pkl")
-LABEL_ENCODER_PATH = str(_PROJECT_ROOT / "models" / "label_encoder.pkl")
+MODEL_PATH         = str(_PROJECT_ROOT / "src" / "ml" / "models" / "fusion_model.pkl")
+LABEL_ENCODER_PATH = str(_PROJECT_ROOT / "src" / "ml" / "models" / "label_encoder.pkl")
 
 # Score scale
 SCORE_LABELS = {

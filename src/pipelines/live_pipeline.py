@@ -18,14 +18,13 @@ from src.core.config import INTENT_RECOMMENDATIONS
 from src.core.audio_capture       import AudioCapture
 from src.features.acoustic.preprocessor  import AudioPreprocessor
 from src.features.acoustic.extractor  import AcousticExtractor
+from src.features.acoustic.diarizer   import SpeakerDiarizer
 from src.features.linguistic.recognizer   import SpeechRecognizer
 from src.features.linguistic.analyzer import LinguisticAnalyzer
 from src.ml.inference.fusion_inference        import FusionModel
 from src.features.engagement.tracker  import EngagementTracker, EngagementRecord
 
-
 from src.features.summarization.llm_summarizer import LLMSummarizer
-
 
 class ConvinceSensePipeline:
     """Full real-time analysis pipeline."""
@@ -35,6 +34,7 @@ class ConvinceSensePipeline:
         self.capture     = AudioCapture()
         self.preprocessor= AudioPreprocessor()
         self.acoustic    = AcousticExtractor()
+        self.diarizer    = SpeakerDiarizer()
         self.asr         = SpeechRecognizer()
         self.nlp         = LinguisticAnalyzer()
         self.model       = FusionModel()
@@ -103,6 +103,9 @@ class ConvinceSensePipeline:
                     # 6. Fusion → score
                     score, confidence = self.model.predict(acoustic_features, linguistic_features)
 
+                    # 6b. Diarization
+                    speaker_id = self.diarizer.identify_speaker(acoustic_features.to_vector())
+
                     # 7. Generate actionable recommendation
                     intents = linguistic_features.detected_intents
                     recommendation = ""
@@ -124,9 +127,10 @@ class ConvinceSensePipeline:
                         recommendation=recommendation,
                         energy=acoustic_features.energy,
                         confidence=confidence,
+                        speaker=speaker_id,
                     )
                     self.output_q.put(record)
-                    print(f"[Pipeline] ✅ Score={score} | '{transcript[:60]}'")
+                    print(f"[Pipeline] ✅ Score={score} | {speaker_id}: '{transcript[:60]}'")
 
                 except Exception as e:
                     # Log the error but keep the thread alive for the next segment
