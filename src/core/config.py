@@ -10,13 +10,13 @@ _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 SAMPLE_RATE        = 16_000        # Hz
 CHANNELS           = 1             # Mono
 SEGMENT_DURATION   = 3             # seconds per analysis chunk
-SILENCE_THRESHOLD  = 0.003         # RMS below this → segment skipped (real speech ~0.005–0.05)
+SILENCE_THRESHOLD  = 0.001         # RMS below this → segment skipped (lowered to catch quieter voices)
 
 # Acoustic features
 N_MFCC             = 13            # number of MFCC coefficients
 
 # Whisper / ASR
-WHISPER_MODEL_SIZE = "base"        # tiny | base | small | medium
+WHISPER_MODEL_SIZE = "small"       # tiny | base | small | medium (upgraded to small for better accuracy)
 WHISPER_LANGUAGE   = "en"
 
 # NLP

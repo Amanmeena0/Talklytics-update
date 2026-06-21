@@ -2,50 +2,110 @@
 ├── AI_Speech_Coach_Report_with_Figures (2).pdf
 ├── README.md
 ├── WALKTHROUGH.md
-├── config.py
-├── dashboard
-│   ├── __init__.py
-│   ├── app.py
-│   └── sphere.py
 ├── data
 ├── generate_figures.py
+├── knowledge_transfer_document.md
 ├── main.py
-├── models
-│   ├── fusion_model.pkl
-│   └── label_encoder.pkl
-├── modules
-│   ├── __init__.py
-│   ├── acoustic_extractor.py
-│   ├── audio_capture.py
-│   ├── audio_preprocessor.py
-│   ├── engagement_tracker.py
-│   ├── fusion_model.py
-│   ├── linguistic_analyzer.py
-│   ├── pipeline.py
-│   └── speech_recognizer.py
 ├── pyproject.toml
 ├── pyrightconfig.json
 ├── report_figures
-│   ├── fig_engagement_annotated.png
-│   ├── fig_feature_importance.png
-│   ├── fig_learning_curve.png
-│   ├── fig_n_estimators_accuracy.png
-│   ├── fig_per_class_accuracy.png
-│   ├── fig_precision_recall_f1.png
-│   ├── fig_processing_latency.png
-│   ├── fig_roc_curve.png
-│   └── fig_score_distribution.png
 ├── requirements.txt
-├── structure.tx
-├── tests
+├── src
 │   ├── __init__.py
-│   └── test_convincesense.py
-└── training
-    ├── __init__.py
-    ├── data_loader.py
-    ├── generate_synthetic_data.py
-    ├── train_from_synthetic.py
-    ├── train_model.py
-    └── train_model_standalone.py
+│   ├── __pycache__
+│   │   └── __init__.cpython-314.pyc
+│   ├── api
+│   │   └── __init__.py
+│   ├── core
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-314.pyc
+│   │   │   ├── audio_capture.cpython-314.pyc
+│   │   │   └── config.cpython-314.pyc
+│   │   ├── audio_capture.py
+│   │   ├── config.py
+│   │   ├── constants.py
+│   │   └── logger.py
+│   ├── dashboard
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-314.pyc
+│   │   │   └── sphere.cpython-314.pyc
+│   │   ├── app.py
+│   │   └── sphere.py
+│   ├── features
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   └── __init__.cpython-314.pyc
+│   │   ├── acoustic
+│   │   │   ├── __init__.py
+│   │   │   ├── __pycache__
+│   │   │   │   ├── __init__.cpython-314.pyc
+│   │   │   │   ├── diarizer.cpython-314.pyc
+│   │   │   │   ├── extractor.cpython-314.pyc
+│   │   │   │   └── preprocessor.cpython-314.pyc
+│   │   │   ├── diarizer.py
+│   │   │   ├── extractor.py
+│   │   │   └── preprocessor.py
+│   │   ├── engagement
+│   │   │   ├── __init__.py
+│   │   │   ├── __pycache__
+│   │   │   │   ├── __init__.cpython-314.pyc
+│   │   │   │   └── tracker.cpython-314.pyc
+│   │   │   └── tracker.py
+│   │   ├── linguistic
+│   │   │   ├── __init__.py
+│   │   │   ├── __pycache__
+│   │   │   │   ├── __init__.cpython-314.pyc
+│   │   │   │   ├── analyzer.cpython-314.pyc
+│   │   │   │   └── recognizer.cpython-314.pyc
+│   │   │   ├── analyzer.py
+│   │   │   └── recognizer.py
+│   │   └── summarization
+│   │       ├── __init__.py
+│   │       ├── __pycache__
+│   │       │   ├── __init__.cpython-314.pyc
+│   │       │   └── llm_summarizer.cpython-314.pyc
+│   │       └── llm_summarizer.py
+│   ├── ml
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   └── __init__.cpython-314.pyc
+│   │   ├── inference
+│   │   │   ├── __init__.py
+│   │   │   ├── __pycache__
+│   │   │   │   ├── __init__.cpython-314.pyc
+│   │   │   │   └── fusion_inference.cpython-314.pyc
+│   │   │   └── fusion_inference.py
+│   │   ├── models
+│   │   │   ├── __init__.py
+│   │   │   ├── fusion_model.pkl
+│   │   │   └── label_encoder.pkl
+│   │   └── training
+│   │       ├── __init__.py
+│   │       ├── __pycache__
+│   │       │   ├── __init__.cpython-314.pyc
+│   │       │   ├── generate_synthetic_data.cpython-314.pyc
+│   │       │   └── trainer.cpython-314.pyc
+│   │       ├── data_loader.py
+│   │       ├── generate_synthetic_data.py
+│   │       ├── train_from_synthetic.py
+│   │       ├── train_model.py
+│   │       ├── train_pipeline.py
+│   │       └── trainer.py
+│   ├── pipelines
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-314.pyc
+│   │   │   └── live_pipeline.cpython-314.pyc
+│   │   └── live_pipeline.py
+│   └── tests
+│       ├── __init__.py
+│       ├── __pycache__
+│       │   ├── __init__.cpython-314.pyc
+│       │   ├── test_convincesense.cpython-314-pytest-9.1.0.pyc
+│       │   └── test_convincesense.cpython-314-pytest-9.1.1.pyc
+│       └── test_convincesense.py
+└── structure.txt
 
-8 directories, 41 files
+31 directories, 78 files
