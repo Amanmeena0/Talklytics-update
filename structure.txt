@@ -1,0 +1,51 @@
+.
+├── AI_Speech_Coach_Report_with_Figures (2).pdf
+├── README.md
+├── WALKTHROUGH.md
+├── config.py
+├── dashboard
+│   ├── __init__.py
+│   ├── app.py
+│   └── sphere.py
+├── data
+├── generate_figures.py
+├── main.py
+├── models
+│   ├── fusion_model.pkl
+│   └── label_encoder.pkl
+├── modules
+│   ├── __init__.py
+│   ├── acoustic_extractor.py
+│   ├── audio_capture.py
+│   ├── audio_preprocessor.py
+│   ├── engagement_tracker.py
+│   ├── fusion_model.py
+│   ├── linguistic_analyzer.py
+│   ├── pipeline.py
+│   └── speech_recognizer.py
+├── pyproject.toml
+├── pyrightconfig.json
+├── report_figures
+│   ├── fig_engagement_annotated.png
+│   ├── fig_feature_importance.png
+│   ├── fig_learning_curve.png
+│   ├── fig_n_estimators_accuracy.png
+│   ├── fig_per_class_accuracy.png
+│   ├── fig_precision_recall_f1.png
+│   ├── fig_processing_latency.png
+│   ├── fig_roc_curve.png
+│   └── fig_score_distribution.png
+├── requirements.txt
+├── structure.tx
+├── tests
+│   ├── __init__.py
+│   └── test_convincesense.py
+└── training
+    ├── __init__.py
+    ├── data_loader.py
+    ├── generate_synthetic_data.py
+    ├── train_from_synthetic.py
+    ├── train_model.py
+    └── train_model_standalone.py
+
+8 directories, 41 files
