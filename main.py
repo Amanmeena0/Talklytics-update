@@ -13,8 +13,8 @@ import signal
 import sys
 import time
 
-from config import SCORE_LABELS
-from modules.pipeline import ConvinceSensePipeline
+from src.core.config import SCORE_LABELS
+from src.pipelines.live_pipeline import ConvinceSensePipeline
 
 
 def main() -> None:

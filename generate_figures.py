@@ -21,12 +21,12 @@ from sklearn.preprocessing import label_binarize, LabelEncoder
 import joblib
 
 # Internal modules
-import config
-from modules.fusion_model import FusionModel
-from modules.acoustic_extractor import AcousticExtractor, AcousticFeatures
-from modules.linguistic_analyzer import LinguisticAnalyzer, LinguisticFeatures
-from modules.engagement_tracker import EngagementTracker
-from training.data_loader import DataLoader
+from src.core import config
+from src.ml.inference.fusion_inference import FusionModel
+from src.features.acoustic.extractor import AcousticExtractor, AcousticFeatures
+from src.features.linguistic.analyzer import LinguisticAnalyzer, LinguisticFeatures
+from src.features.engagement.tracker import EngagementTracker
+from src.ml.training.data_loader import DataLoader
 
 # ────────────────────────────────────────────────────────────────────────── #
 #  Styling & Config                                                          #
@@ -102,12 +102,12 @@ def load_data():
             print(f"  Processing {i}/{total} ...")
         parts = path.stem.split("-")
         if len(parts) < 3: continue
-        from training.data_loader import RAVDESS_TO_SCORE
+        from src.ml.training.data_loader import RAVDESS_TO_SCORE
         score = RAVDESS_TO_SCORE.get(parts[2], 3)
         
         audio, _ = librosa.load(str(path), sr=config.SAMPLE_RATE, mono=True)
         feats = loader._acoustic.extract(audio)
-        from modules.linguistic_analyzer import LinguisticFeatures
+        from src.features.linguistic.analyzer import LinguisticFeatures
         ling = LinguisticFeatures()
         vec = np.concatenate([feats.to_vector(), ling.to_vector()])
         X.append(vec)
@@ -250,7 +250,7 @@ def main():
     #  FIGURE 6 — Processing Latency Chart                                   #
     # ────────────────────────────────────────────────────────────────────── #
     print("Generating Figure 6: Processing Latency ...")
-    from modules.pipeline import ConvinceSensePipeline
+    from src.pipelines.live_pipeline import ConvinceSensePipeline
     audio_files = list(Path("archive").rglob("*.wav"))[:30]
     stage_timings = collections.defaultdict(list)
     pipeline = ConvinceSensePipeline()
