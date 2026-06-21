@@ -52,7 +52,7 @@ class ConvinceSensePipeline:
 
     def get_summary(self) -> str:
         """Generate a post-call summary using the recorded history."""
-        return self.summarizer.generate_summary(self.tracker.history)
+        return self.summarizer.generate_summary(self.tracker.records)
 
     # ------------------------------------------------------------------ #
     #  Public API                                                          #

@@ -17,7 +17,7 @@ import numpy as np
 import streamlit as st
 
 # Allow imports from project root
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from src.core.config import SCORE_LABELS
 from src.pipelines.live_pipeline import ConvinceSensePipeline
