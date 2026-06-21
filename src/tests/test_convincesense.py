@@ -136,10 +136,11 @@ class TestFusionModelHeuristic:
 class TestFusionModelTrained:
     def test_train_and_predict(self):
         from src.ml.training.generate_synthetic_data import generate
+        from src.ml.training.trainer import FusionTrainer
         X, y = generate(n_samples=200, seed=0)
-        model = FusionModel()
-        model.train(X[:160], y[:160])
-        score, conf = model._clf.predict(X[160:161]), None
+        trainer = FusionTrainer()
+        trainer.train(X[:160], y[:160])
+        score = trainer.clf.predict(X[160:161])
         assert score is not None
 
 

@@ -24,6 +24,9 @@ from src.ml.inference.fusion_inference        import FusionModel
 from src.features.engagement.tracker  import EngagementTracker, EngagementRecord
 
 
+from src.features.summarization.llm_summarizer import LLMSummarizer
+
+
 class ConvinceSensePipeline:
     """Full real-time analysis pipeline."""
 
@@ -36,6 +39,7 @@ class ConvinceSensePipeline:
         self.nlp         = LinguisticAnalyzer()
         self.model       = FusionModel()
         self.tracker     = EngagementTracker()
+        self.summarizer  = LLMSummarizer()
 
         # Output queue consumed by the dashboard
         self.output_q: queue.Queue[EngagementRecord] = queue.Queue()
@@ -45,6 +49,10 @@ class ConvinceSensePipeline:
 
         # Try to load a pre-trained model
         self.model.load()
+
+    def get_summary(self) -> str:
+        """Generate a post-call summary using the recorded history."""
+        return self.summarizer.generate_summary(self.tracker.history)
 
     # ------------------------------------------------------------------ #
     #  Public API                                                          #

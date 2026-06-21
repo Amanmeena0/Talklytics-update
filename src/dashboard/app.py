@@ -62,6 +62,8 @@ with col_btn1:
     if st.button("▶ Start", disabled=st.session_state.running, use_container_width=True):
         pipeline.tracker.reset()
         st.session_state.records = []
+        st.session_state.show_summary = False
+        st.session_state.summary_text = ""
         pipeline.start()
         st.session_state.running = True
         st.session_state.device_name = pipeline.capture.active_device_name
@@ -71,6 +73,18 @@ with col_btn2:
     if st.button("⏹ Stop", disabled=not st.session_state.running, use_container_width=True):
         pipeline.stop()
         st.session_state.running = False
+        st.rerun()
+
+with col_btn3:
+    if st.button("📝 End Call & Summarize", disabled=not st.session_state.records, use_container_width=False):
+        if st.session_state.running:
+            pipeline.stop()
+            st.session_state.running = False
+        
+        with st.spinner("Generating AI Summary..."):
+            st.session_state.summary_text = pipeline.get_summary()
+        
+        st.session_state.show_summary = True
         st.rerun()
 
 # ── Reactive Listening Sphere ──────────────────────────────────────────── #
@@ -162,6 +176,12 @@ else:
     st.info("Press **▶ Start** and speak into your microphone.")
 
 st.divider()
+
+# ── AI Summary ────────────────────────────────────────────────────────── #
+if st.session_state.get("show_summary", False) and st.session_state.get("summary_text"):
+    st.subheader("✨ AI Post-Call Summary")
+    st.markdown(st.session_state.summary_text)
+    st.divider()
 
 # ── Engagement timeline chart ─────────────────────────────────────────── #
 st.subheader("📈 Engagement Timeline")
