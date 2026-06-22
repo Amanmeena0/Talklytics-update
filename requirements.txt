@@ -2,7 +2,7 @@ altair
 annotated-doc
 anyio
 attrs
-audioop-lts
+audioop-lts; python_version >= '3.13'
 audioread
 av
 blinker
