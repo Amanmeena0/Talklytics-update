@@ -2,7 +2,6 @@ altair
 annotated-doc
 anyio
 attrs
-audioop-lts; python_version >= '3.13'
 audioread
 av
 blinker
@@ -75,9 +74,6 @@ smmap
 sounddevice
 soundfile
 soxr
-standard-aifc
-standard-chunk
-standard-sunau
 streamlit
 sympy
 tenacity
