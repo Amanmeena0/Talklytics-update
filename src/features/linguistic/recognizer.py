@@ -32,6 +32,7 @@ class SpeechRecognizer:
             language=self.language,
             beam_size=1,         # fastest mode for near-real-time
             vad_filter=True,     # skip silent parts automatically
+            condition_on_previous_text=False,
         )
         text = " ".join(seg.text.strip() for seg in segments)
         return text.strip()
