@@ -28,7 +28,7 @@ def render_reactive_sphere(
         glow intensity, and ripple spawning.
     is_listening : bool
         Whether the pipeline is actively capturing audio.
-    height : int
+    height : int 
         Height of the HTML component in pixels.
     """
     # Clamp and normalize
