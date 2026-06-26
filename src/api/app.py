@@ -9,7 +9,7 @@ Provides:
 from fastapi import FastAPI, WebSocket, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from src.pipelines.live_pipeline import ConvinceSensePipeline
-from src.features.engagement.tracker import Record
+from src.features.engagement.tracker import EngagementRecord
 import json
 import os
 
@@ -50,5 +50,5 @@ async def websocket_endpoint(ws: WebSocket):
     # No auth for websockets – optionally verify a query param later
     while True:
         # Blocking call to get the next record from the pipeline
-        record: Record = pipeline.output_q.get()
+        record: EngagementRecord = pipeline.output_q.get()
         await ws.send_text(json.dumps(record.__dict__))
