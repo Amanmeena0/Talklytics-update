@@ -2,9 +2,30 @@
 #  ConvinceSense — Central Configuration
 # ─────────────────────────────────────────────
 
+import os
 from pathlib import Path
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+
+# Load environment variables from .env if it exists
+_env_path = _PROJECT_ROOT / ".env"
+if _env_path.exists():
+    with open(_env_path, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            # Skip empty lines or comments
+            if not line or line.startswith("#"):
+                continue
+            if "=" in line:
+                key, val = line.split("=", 1)
+                key = key.strip()
+                val = val.strip()
+                # Strip quotes if present
+                if (val.startswith('"') and val.endswith('"')) or (val.startswith("'") and val.endswith("'")):
+                    val = val[1:-1]
+                # Only set if not already set in actual environment
+                if key not in os.environ:
+                    os.environ[key] = val
 
 # Audio
 SAMPLE_RATE        = 16_000        # Hz
