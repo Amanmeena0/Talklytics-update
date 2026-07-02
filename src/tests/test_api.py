@@ -16,6 +16,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from src.api.app import app, get_db
 from src.database.connection import Base
 from src.database import models
+from src.database.seed import seed_roles_and_permissions
+from src.auth.security import create_access_token
+from datetime import timedelta
 
 
 # ── Test Database Setup ────────────────────────────────────────────────── #
@@ -37,24 +40,49 @@ def override_get_db():
     finally:
         db.close()
 
-app.dependency_overrides[get_db] = override_get_db
 client = TestClient(app)
 
 
 @pytest.fixture(autouse=True)
 def setup_database():
     """Create a clean database schema before each test."""
+    app.dependency_overrides[get_db] = override_get_db
+    client.cookies.clear()
+    client.headers.pop("Authorization", None)
+    
     Base.metadata.create_all(bind=engine)
-    # Seed default user
     db = TestingSessionLocal()
-    user = models.User(id=1, email="testrep@convincesense.com", name="Test Rep")
+    
+    # Seed default roles & permissions
+    seed_roles_and_permissions(db)
+    
+    # Seed default user with active status
+    user = models.User(id=1, email="testrep@convincesense.com", name="Test Rep", is_active=True)
     db.add(user)
+    db.flush()
+    
+    # Assign 'admin' role to test user so they can access all calls/analytics endpoints
+    admin_role = db.query(models.Role).filter_by(name="admin").first()
+    db.add(models.UserRole(user_id=user.id, role_id=admin_role.id))
+    
+    # Create active session record in DB
+    session = models.Session(id=1, user_id=user.id, refresh_token_hash="test_session_hash", expires_at=models.datetime.utcnow() + timedelta(days=1))
+    db.add(session)
+    
     db.commit()
     db.close()
+    
+    # Generate access token and set as Authorization header
+    token = create_access_token({"sub": "1", "sid": "1", "tver": 0})
+    client.headers["Authorization"] = f"Bearer {token}"
     
     yield
     
     Base.metadata.drop_all(bind=engine)
+    app.dependency_overrides.pop(get_db, None)
+    client.headers.pop("Authorization", None)
+    client.cookies.clear()
+    app.dependency_overrides.pop(get_db, None)
 
 
 # ── Tests ─────────────────────────────────────────────────────────────── #

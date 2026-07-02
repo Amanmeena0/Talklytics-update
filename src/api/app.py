@@ -18,6 +18,8 @@ from src.database import models, schemas, crud
 from src.database.connection import SessionLocal, engine, get_db, Base
 from src.pipelines.live_pipeline import ConvinceSensePipeline
 from src.features.engagement.tracker import EngagementRecord
+from src.api.auth import router as auth_router
+from src.auth.dependencies import require_permission
 
 
 # Create all tables on startup (as a fallback/safety measure)
@@ -55,6 +57,9 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan
 )
+
+# Include Authentication Router
+app.include_router(auth_router, prefix="/api/v1/auth", tags=["auth"])
 
 # CORS – allow all origins for development (restrict in production)
 app.add_middleware(
@@ -94,8 +99,10 @@ async def config(x_api_key: str = Header(None)):
 
 
 @app.get("/session/summary")
-async def session_summary(x_api_key: str = Header(None)):
-    _require_api_key(x_api_key)
+async def session_summary(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_permission("calls:read")),
+):
     try:
         summary_text = pipeline.get_summary()
         return {"summary": summary_text}
@@ -114,10 +121,9 @@ def read_calls(
     user_id: Optional[int] = Query(None, description="Filter by user ID"),
     sort_by: str = Query("created_at", description="Field to sort by (created_at, title)"),
     sort_order: str = Query("desc", description="Sort order (asc, desc)"),
-    x_api_key: Optional[str] = Header(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_permission("calls:read")),
 ):
-    _require_api_key(x_api_key)
     return crud.get_calls(
         db,
         skip=skip,
@@ -133,10 +139,9 @@ def read_calls(
 @app.get("/calls/{call_id}", response_model=schemas.Call)
 def read_call(
     call_id: int,
-    x_api_key: Optional[str] = Header(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_permission("calls:read")),
 ):
-    _require_api_key(x_api_key)
     db_call = crud.get_call(db, call_id)
     if not db_call:
         raise HTTPException(status_code=404, detail="Call not found")
@@ -146,10 +151,9 @@ def read_call(
 @app.post("/calls", response_model=schemas.Call)
 def create_call(
     call: schemas.CallCreate,
-    x_api_key: Optional[str] = Header(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_permission("calls:write")),
 ):
-    _require_api_key(x_api_key)
     user = crud.get_user(db, call.user_id)
     if not user:
         raise HTTPException(status_code=400, detail=f"User with id {call.user_id} does not exist")
@@ -157,7 +161,7 @@ def create_call(
     db_call = crud.create_call(db, call)
     crud.create_audit_log(db, schemas.AuditLogCreate(
         user_id=call.user_id,
-        action="CREATE_CALL",
+        event_type="CREATE_CALL",
         details={"call_id": db_call.id, "title": db_call.title}
     ))
     return db_call
@@ -167,10 +171,9 @@ def create_call(
 def update_call(
     call_id: int,
     call_update: schemas.CallUpdate,
-    x_api_key: Optional[str] = Header(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_permission("calls:write")),
 ):
-    _require_api_key(x_api_key)
     db_call = crud.get_call(db, call_id)
     if not db_call:
         raise HTTPException(status_code=404, detail="Call not found")
@@ -178,7 +181,7 @@ def update_call(
     updated = crud.update_call(db, call_id, call_update)
     crud.create_audit_log(db, schemas.AuditLogCreate(
         user_id=db_call.user_id,
-        action="UPDATE_CALL",
+        event_type="UPDATE_CALL",
         details={"call_id": call_id, "updated_fields": list(call_update.model_dump(exclude_unset=True).keys())}
     ))
     return updated
@@ -187,10 +190,9 @@ def update_call(
 @app.delete("/calls/{call_id}")
 def delete_call(
     call_id: int,
-    x_api_key: Optional[str] = Header(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_permission("calls:delete")),
 ):
-    _require_api_key(x_api_key)
     db_call = db.query(models.Call).filter(models.Call.id == call_id).first()
     if not db_call or db_call.is_deleted:
         raise HTTPException(status_code=404, detail="Call not found")
@@ -201,7 +203,7 @@ def delete_call(
         
     crud.create_audit_log(db, schemas.AuditLogCreate(
         user_id=db_call.user_id,
-        action="DELETE_CALL",
+        event_type="DELETE_CALL",
         details={"call_id": call_id}
     ))
     return {"success": True, "message": "Call soft-deleted successfully"}
@@ -213,10 +215,9 @@ def delete_call(
 def add_comment(
     call_id: int,
     comment: schemas.CommentCreate,
-    x_api_key: Optional[str] = Header(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_permission("calls:write")),
 ):
-    _require_api_key(x_api_key)
     db_call = crud.get_call(db, call_id)
     if not db_call:
         raise HTTPException(status_code=404, detail="Call not found")
@@ -224,7 +225,7 @@ def add_comment(
     db_comment = crud.create_comment(db, call_id, comment)
     crud.create_audit_log(db, schemas.AuditLogCreate(
         user_id=db_call.user_id,
-        action="ADD_COMMENT",
+        event_type="ADD_COMMENT",
         details={"call_id": call_id, "comment_id": db_comment.id}
     ))
     return db_comment
@@ -234,10 +235,9 @@ def add_comment(
 def update_next_step(
     call_id: int,
     next_step_update: schemas.NextStepCallUpdate,
-    x_api_key: Optional[str] = Header(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_permission("calls:write")),
 ):
-    _require_api_key(x_api_key)
     db_call = crud.get_call(db, call_id)
     if not db_call:
         raise HTTPException(status_code=404, detail="Call not found")
@@ -257,7 +257,7 @@ def update_next_step(
         
     crud.create_audit_log(db, schemas.AuditLogCreate(
         user_id=db_call.user_id,
-        action="UPDATE_NEXT_STEP",
+        event_type="UPDATE_NEXT_STEP",
         details={"call_id": call_id, "next_step_id": db_next.id}
     ))
     return db_next
@@ -266,10 +266,9 @@ def update_next_step(
 def create_next_step(
     call_id: int,
     next_step: schemas.NextStepCreate,
-    x_api_key: Optional[str] = Header(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_permission("calls:write")),
 ):
-    _require_api_key(x_api_key)
     db_call = crud.get_call(db, call_id)
     if not db_call:
         raise HTTPException(status_code=404, detail="Call not found")
@@ -286,7 +285,7 @@ def create_next_step(
     
     crud.create_audit_log(db, schemas.AuditLogCreate(
         user_id=db_call.user_id,
-        action="ADD_NEXT_STEP",
+        event_type="ADD_NEXT_STEP",
         details={"call_id": call_id, "next_step_id": db_next.id}
     ))
     return db_next
@@ -296,10 +295,9 @@ def create_next_step(
 def delete_next_step(
     call_id: int,
     next_step_id: int,
-    x_api_key: Optional[str] = Header(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_permission("calls:delete")),
 ):
-    _require_api_key(x_api_key)
     db_call = crud.get_call(db, call_id)
     if not db_call:
         raise HTTPException(status_code=404, detail="Call not found")
@@ -316,7 +314,7 @@ def delete_next_step(
     
     crud.create_audit_log(db, schemas.AuditLogCreate(
         user_id=db_call.user_id,
-        action="DELETE_NEXT_STEP",
+        event_type="DELETE_NEXT_STEP",
         details={"call_id": call_id, "next_step_id": next_step_id}
     ))
     return {"success": True, "message": "Next step deleted successfully"}
@@ -327,10 +325,9 @@ def delete_next_step(
 
 @app.get("/analytics", response_model=schemas.AnalyticsResponse)
 def read_analytics(
-    x_api_key: Optional[str] = Header(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_permission("analytics:read")),
 ):
-    _require_api_key(x_api_key)
     return crud.get_analytics(db)
 
 

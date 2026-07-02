@@ -200,7 +200,7 @@ def update_next_step(
 def create_audit_log(db: Session, log: schemas.AuditLogCreate) -> models.AuditLog:
     db_log = models.AuditLog(
         user_id=log.user_id,
-        action=log.action,
+        event_type=log.event_type,
         details=log.details
     )
     db.add(db_log)

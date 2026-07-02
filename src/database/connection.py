@@ -5,6 +5,9 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
+# Ensure environment variables are loaded from config
+from src.core import config
+
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 # Fallback to local SQLite database if DATABASE_URL is not set (e.g. for local testing/development)
