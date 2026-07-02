@@ -41,7 +41,14 @@ async def lifespan(app: FastAPI):
             )
             db.add(default_user)
             db.commit()
-            print("[Database Startup] Created default sales rep user (id=1)")
+            
+            # Reset users table sequence to prevent unique key violation on future registrations in Postgres
+            if db.bind.dialect.name == "postgresql":
+                from sqlalchemy import text
+                db.execute(text("SELECT setval(pg_get_serial_sequence('users', 'id'), coalesce(max(id), 1)) FROM users;"))
+                db.commit()
+                
+            print("[Database Startup] Created default sales rep user (id=1) and synced sequence")
     except Exception as e:
         print(f"[Database Startup Error] Failed to create default user: {e}")
     finally:
