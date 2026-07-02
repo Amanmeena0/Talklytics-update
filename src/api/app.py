@@ -49,6 +49,16 @@ async def config(x_api_key: str = Header(None)):
     _require_api_key(x_api_key)
     return {"version": "1.0.0", "framework": "ConvinceSense"}
 
+@app.get("/session/summary")
+async def session_summary(x_api_key: str = Header(None)):
+    _require_api_key(x_api_key)
+    try:
+        summary_text = pipeline.get_summary()
+        return {"summary": summary_text}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.websocket("/ws/records")
 async def websocket_endpoint(ws: WebSocket):
     await ws.accept()
