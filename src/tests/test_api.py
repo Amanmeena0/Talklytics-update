@@ -96,7 +96,7 @@ def test_health_endpoint():
 def test_config_endpoint():
     response = client.get("/config")
     assert response.status_code == 200
-    assert response.json()["framework"] == "ConvinceSense"
+    assert response.json()["framework"] == "Talklytics"
 
 
 def test_create_and_get_calls():

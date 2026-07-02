@@ -1,4 +1,4 @@
-# Everything I Need To Know About This Project: ConvinceSense Technical Audit
+# Everything I Need To Know About This Project: Talklytics Technical Audit
 
 ## Part 1: High-Level Project Analysis
 
@@ -10,7 +10,7 @@
   - **Input**: Live continuous microphone audio stream.
   - **Output**: Real-time engagement score (1-5), detected intents (Pricing, Comparison, etc.), sentiment, buying/hesitation signals, actionable recommendations, and a visual dashboard.
 - **Core ML pipeline**: Audio Capture -> Preprocessing -> Parallel (Acoustic Feature Extraction + Whisper ASR -> Linguistic NLP Analysis) -> Feature-Level Concatenation -> Random Forest Classifier Fusion -> Engagement Score.
-- **Real-world use case**: A sales rep is on a Zoom call with a prospect. ConvinceSense runs in the background. When the prospect asks "how much does it cost?", the system detects a "PRICING" intent and "Interested" score, prompting the rep with "💰 Discuss pricing breakdown clearly — be transparent."
+- **Real-world use case**: A sales rep is on a Zoom call with a prospect. Talklytics runs in the background. When the prospect asks "how much does it cost?", the system detects a "PRICING" intent and "Interested" score, prompting the rep with "💰 Discuss pricing breakdown clearly — be transparent."
 - **Business value**: Increases conversion rates by guiding sales reps in real-time, reduces the need for extensive post-call coaching, and provides quantifiable metrics on prospect engagement throughout the call.
 
 ### System Architecture Overview

@@ -1,6 +1,6 @@
-# ConvinceSense — Project Walkthrough
+# Talklytics — Project Walkthrough
 
-> **ConvinceSense** is a real-time multimodal speech analysis system that
+> **Talklytics** is a real-time multimodal speech analysis system that
 > detects conversational interest and engagement during live sales
 > conversations, providing actionable feedback *while the conversation is
 > still happening* — not after.
@@ -9,7 +9,7 @@
 
 ## 1  System Overview
 
-ConvinceSense follows a modular pipeline architecture inspired by
+Talklytics follows a modular pipeline architecture inspired by
 production-grade real-time analytics systems:
 
 ```
@@ -90,7 +90,7 @@ trained classifier because:
 
 ## 3  Fusion Strategy
 
-ConvinceSense uses **feature-level (early) fusion**:
+Talklytics uses **feature-level (early) fusion**:
 
 1. Acoustic features are encoded as a fixed-length numeric vector
    (13 MFCC means + energy + pitch + ZCR = 16 values).
@@ -158,7 +158,7 @@ deployment would require:
 
 ## 6  Real-Time Simulation
 
-ConvinceSense achieves live feedback using an engineering workaround
+Talklytics achieves live feedback using an engineering workaround
 for Streamlit's single-threaded architecture:
 
 1. **Background thread** — The pipeline runs in a daemon thread,
@@ -268,7 +268,7 @@ fallback (which boosts `COMMITMENT` and penalises `OBJECTION`).
 
 ## 9  Closing Statement
 
-> *"ConvinceSense demonstrates how real-time multimodal AI systems
+> *"Talklytics demonstrates how real-time multimodal AI systems
 > can provide actionable feedback during conversations rather than
 > post-analysis — shifting conversational intelligence from
 > retrospective review to live decision support."*

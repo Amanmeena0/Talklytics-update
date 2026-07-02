@@ -1,7 +1,7 @@
-# 🎙️ ConvinceSense
+# 🎙️ Talklytics
 > Real-Time Conversational Interest Detection System
 
-ConvinceSense analyses live sales calls and outputs a **Convincingness Score (1–5)**
+Talklytics analyses live sales calls and outputs a **Convincingness Score (1–5)**
 that reflects how interested a customer sounds — using both *what* they say and *how* they say it.
 
 ---
@@ -67,7 +67,7 @@ Without a trained model the system uses a built-in heuristic fallback.
 ## Project Structure
 
 ```
-convincesense/
+Talklytics-update/
 ├── config.py                   ← All tunable parameters
 ├── main.py                     ← Headless entry point
 ├── requirements.txt
