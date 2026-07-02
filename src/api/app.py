@@ -59,8 +59,8 @@ async def lifespan(app: FastAPI):
         pipeline.stop()
 
 app = FastAPI(
-    title="ConvinceSense API",
-    description="REST and WebSocket APIs for ConvinceSense Conversation Intelligence",
+    title="Talklytics API",
+    description="REST and WebSocket APIs for Talklytics Conversation Intelligence",
     version="1.0.0",
     lifespan=lifespan
 )
@@ -102,7 +102,7 @@ async def health(x_api_key: str = Header(None)):
 @app.get("/config")
 async def config(x_api_key: str = Header(None)):
     _require_api_key(x_api_key)
-    return {"version": "1.0.0", "framework": "ConvinceSense"}
+    return {"version": "1.0.0", "framework": "Talklytics"}
 
 
 @app.get("/session/summary")

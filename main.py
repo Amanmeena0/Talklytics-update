@@ -1,7 +1,7 @@
 """
 main.py
 ────────
-ConvinceSense headless entry point.
+Talklytics headless entry point.
 Runs the full pipeline and prints engagement records to the terminal.
 Use this for testing without Streamlit.
 
@@ -20,7 +20,7 @@ from src.pipelines.live_pipeline import ConvinceSensePipeline
 def main() -> None:
     pipeline = ConvinceSensePipeline()
 
-    print("ConvinceSense — Real-Time Conversational Interest Detection")
+    print("Talklytics — Real-Time Conversational Interest Detection")
     print("Press Ctrl+C to stop.\n")
 
     pipeline.start()
