@@ -10,7 +10,13 @@ import time
 import warnings
 
 import numpy as np
-import sounddevice as sd
+
+try:
+    import sounddevice as sd
+    PORTAUDIO_AVAILABLE = True
+except (ImportError, OSError):
+    PORTAUDIO_AVAILABLE = False
+    sd = None
 
 from src.core.config import SAMPLE_RATE, CHANNELS, SEGMENT_DURATION
 
@@ -24,6 +30,8 @@ def _find_input_device() -> int | None:
     3. First device that has ≥1 input channel
     4. None  →  let sounddevice pick (may fail, but gives a clear error)
     """
+    if not PORTAUDIO_AVAILABLE or sd is None:
+        return None
     try:
         # sd.default.device is a (input_idx, output_idx) tuple
         default_in = sd.default.device[0]
@@ -35,18 +43,20 @@ def _find_input_device() -> int | None:
         pass
 
     # Fallback: scan all devices
-    devices = sd.query_devices()
-    mic_idx = None
-    first_input_idx = None
-    for idx, dev in enumerate(devices):
-        if dev["max_input_channels"] < 1:
-            continue
-        if first_input_idx is None:
-            first_input_idx = idx
-        if "microphone" in dev["name"].lower() and mic_idx is None:
-            mic_idx = idx
-
-    return mic_idx if mic_idx is not None else first_input_idx
+    try:
+        devices = sd.query_devices()
+        mic_idx = None
+        first_input_idx = None
+        for idx, dev in enumerate(devices):
+            if dev["max_input_channels"] < 1:
+                continue
+            if first_input_idx is None:
+                first_input_idx = idx
+            if "microphone" in dev["name"].lower() and mic_idx is None:
+                mic_idx = idx
+        return mic_idx if mic_idx is not None else first_input_idx
+    except Exception:
+        return None
 
 
 class AudioCapture:
@@ -80,7 +90,7 @@ class AudioCapture:
         # Lock-free buffer queue containing raw audio blocks from the callback
         self._block_queue: queue.Queue[np.ndarray] = queue.Queue(maxsize=300)
         self._buffer: list[np.ndarray]   = []
-        self._stream: sd.InputStream | None = None
+        self._stream = None
         self._running = False
 
     # ------------------------------------------------------------------ #
@@ -99,6 +109,13 @@ class AudioCapture:
             except queue.Empty:
                 break
 
+        if not PORTAUDIO_AVAILABLE or sd is None:
+            import threading
+            print("[AudioCapture] PortAudio not available. Running in dummy mock mode (generating silence).")
+            self._dummy_thread = threading.Thread(target=self._dummy_generator, daemon=True)
+            self._dummy_thread.start()
+            return
+
         kwargs: dict = dict(
             samplerate=self.sample_rate,
             channels=self.channels,
@@ -115,10 +132,26 @@ class AudioCapture:
     def stop(self) -> None:
         """Stop recording and close the stream."""
         self._running = False
-        if self._stream:
-            self._stream.stop()
-            self._stream.close()
+        if PORTAUDIO_AVAILABLE and self._stream:
+            try:
+                self._stream.stop()
+                self._stream.close()
+            except Exception:
+                pass
             self._stream = None
+
+    def _dummy_generator(self) -> None:
+        """Generate silent audio blocks when PortAudio is not available."""
+        block_duration = self._blocksize / self.sample_rate
+        while self._running:
+            time.sleep(block_duration)
+            if not self._running:
+                break
+            block = np.zeros(self._blocksize, dtype=np.float32)
+            try:
+                self._block_queue.put_nowait(block)
+            except queue.Full:
+                pass
 
     def get_segment(self, timeout: float = 10.0) -> np.ndarray | None:
         """Block until a full segment is available, then return it.
@@ -159,6 +192,8 @@ class AudioCapture:
     @property
     def active_device_name(self) -> str:
         """Human-readable name of the device being used."""
+        if not PORTAUDIO_AVAILABLE or sd is None:
+            return "dummy device (PortAudio missing)"
         if self.device is None:
             return "system default"
         try:
