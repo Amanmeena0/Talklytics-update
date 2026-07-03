@@ -68,13 +68,20 @@ app = FastAPI(
 # Include Authentication Router
 app.include_router(auth_router, prefix="/api/v1/auth", tags=["auth"])
 
-# CORS – allow all origins for development (restrict in production)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
+# CORS – allow configured origins dynamically, fall back to localhost
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "")
+allowed_origins = [origin.strip() for origin in allowed_origins_env.split(",") if origin.strip()]
+if not allowed_origins:
+    allowed_origins = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-    ],
+    ]
+else:
+    allowed_origins.extend(["http://localhost:3000", "http://127.0.0.1:3000"])
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
