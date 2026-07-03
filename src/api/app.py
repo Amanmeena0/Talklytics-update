@@ -75,9 +75,10 @@ if not allowed_origins:
     allowed_origins = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+        "https://conviciesense-mic.vercel.app/"
     ]
 else:
-    allowed_origins.extend(["http://localhost:3000", "http://127.0.0.1:3000"])
+    allowed_origins.extend(["http://localhost:3000", "http://127.0.0.1:3000","https://conviciesense-mic.vercel.app/"])
 
 app.add_middleware(
     CORSMiddleware,
