@@ -5,10 +5,10 @@ Analyses a text transcript for sentiment and buying/hesitation signals
 using HuggingFace DistilBERT.
 """
 
+import os
 from dataclasses import dataclass, field
 
 import numpy as np
-from transformers import pipeline
 
 from src.core.config import (
     SENTIMENT_MODEL,
@@ -48,25 +48,52 @@ class LinguisticAnalyzer:
     """Runs sentiment analysis and keyword detection on a transcript."""
 
     def __init__(self, model_name: str = SENTIMENT_MODEL) -> None:
-        self._sentiment = pipeline(
-            "sentiment-analysis",
-            model=model_name,
-            truncation=True,
-            max_length=512,
-        )
+        self.model_name = model_name
+        self._sentiment = None
 
     def analyze(self, text: str) -> LinguisticFeatures:
         if not text.strip():
             return LinguisticFeatures()
 
-        # ── Sentiment ─────────────────────────────────────────────────── #
-        result = self._sentiment(text)[0]
-        label  = result["label"].upper()   # POSITIVE / NEGATIVE
-        score  = float(result["score"])
+        # Lazy loading of Transformers pipeline
+        if self._sentiment is None:
+            if os.getenv("RENDER") == "true" or os.getenv("LIGHTWEIGHT_MODE") == "true":
+                print("[LinguisticAnalyzer] Running in lightweight mode. Using rule-based sentiment.")
+                self._sentiment = "rule-based"
+            else:
+                from transformers import pipeline
+                self._sentiment = pipeline(
+                    "sentiment-analysis",
+                    model=self.model_name,
+                    truncation=True,
+                    max_length=512,
+                )
 
-        # Normalise to three-class
-        if label == "NEGATIVE" and score < 0.65:
-            label = "NEUTRAL"
+        # ── Sentiment ─────────────────────────────────────────────────── #
+        if self._sentiment == "rule-based":
+            lower_text = text.lower()
+            positive_words = ["great", "good", "yes", "awesome", "perfect", "interested", "excited", "happy", "love", "like", "proceed"]
+            negative_words = ["bad", "no", "expensive", "not ready", "objection", "concerned", "worry", "difficult", "fail", "not sure"]
+            pos_count = sum(1 for w in positive_words if w in lower_text)
+            neg_count = sum(1 for w in negative_words if w in lower_text)
+            
+            if pos_count > neg_count:
+                label = "POSITIVE"
+                score = 0.8
+            elif neg_count > pos_count:
+                label = "NEGATIVE"
+                score = 0.8
+            else:
+                label = "NEUTRAL"
+                score = 0.5
+        else:
+            result = self._sentiment(text)[0]
+            label  = result["label"].upper()   # POSITIVE / NEGATIVE
+            score  = float(result["score"])
+
+            # Normalise to three-class
+            if label == "NEGATIVE" and score < 0.65:
+                label = "NEUTRAL"
 
         # ── Keyword detection ─────────────────────────────────────────── #
         lower = text.lower()
