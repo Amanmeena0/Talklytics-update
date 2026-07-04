@@ -41,10 +41,15 @@ class SpeechRecognizer:
             
             script = [
                 "Hello, I am interested in hearing more about your Talklytics platform.",
-                "How much does it cost? Is there a subscription fee or monthly plan?",
-                "Compared to other options, what makes it better?",
+                "I'd be happy to explain. Talklytics is a real-time conversation intelligence platform that tracks buyer sentiment, intents, and signals.",
+                "That sounds useful. How much does it cost? Is there a subscription fee or monthly plan?",
+                "We offer custom packages starting at forty-nine dollars per seat, with flexible monthly or annual billing options.",
+                "Compared to other options on the market, what makes Talklytics better?",
+                "Unlike standard post-call analytics, we provide live recommendation cards and objection tracking during the call itself.",
+                "I have a concern about the implementation timeline. Is it complex to integrate with our current CRM?",
+                "Not at all. We support single-click integrations with major CRMs and VoIP dialers, taking less than an hour to set up.",
                 "That sounds great, let's sign me up and get started.",
-                "I have a concern about the implementation timeline, is it too complex?"
+                "Fantastic! I will send over the contract and the onboarding next steps right away."
             ]
             
             rms = np.sqrt(np.mean(segment**2))

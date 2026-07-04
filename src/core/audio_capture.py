@@ -141,13 +141,16 @@ class AudioCapture:
             self._stream = None
 
     def _dummy_generator(self) -> None:
-        """Generate silent audio blocks when PortAudio is not available."""
+        """Generate dummy non-silent audio blocks when PortAudio is not available."""
         block_duration = self._blocksize / self.sample_rate
         while self._running:
             time.sleep(block_duration)
             if not self._running:
                 break
-            block = np.zeros(self._blocksize, dtype=np.float32)
+            # Generate a low-amplitude white noise so it's not filtered out as silent.
+            # Standard deviation of 0.05 gives an RMS of ~0.05, which is > SILENCE_THRESHOLD (0.001)
+            # and > WHISPER rms check (0.001).
+            block = np.random.normal(0.0, 0.05, self._blocksize).astype(np.float32)
             try:
                 self._block_queue.put_nowait(block)
             except queue.Full:
