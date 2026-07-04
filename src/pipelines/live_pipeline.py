@@ -104,7 +104,11 @@ class ConvinceSensePipeline:
                     score, confidence = self.model.predict(acoustic_features, linguistic_features)
 
                     # 6b. Diarization
-                    speaker_id = self.diarizer.identify_speaker(acoustic_features.to_vector())
+                    if getattr(self.asr, "_model", None) == "simulated":
+                        step_idx = getattr(self.asr, "_step", 0) - 1
+                        speaker_id = "Prospect" if step_idx % 2 == 0 else "You"
+                    else:
+                        speaker_id = self.diarizer.identify_speaker(acoustic_features.to_vector())
 
                     # 7. Generate actionable recommendation
                     intents = linguistic_features.detected_intents
